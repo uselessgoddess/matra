@@ -16,10 +16,10 @@ bevy_spectator = { version = "0.7" }
 bevy-tnua = "0.21"
 bevy-tnua-avian3d = "0.2"
 bevy_atmosphere = "0.12"
-bevy_easy_portals = { path = "crates/bevy_easy_portals", features = ["gizmos"] }
 bevy-inspector-egui = "0.29"
 bevy_asset_loader = "0.22.0"
 iyes_progress = "0.13"
+bevy_easy_portals = { git = "https://github.com/chompaa/bevy_easy_portals", features = ["gizmos"] }
 
 # higher
 egui = "0.30"
