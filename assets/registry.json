@@ -23452,36 +23452,6 @@
       "type": "int",
       "typeInfo": "Value"
     },
-    "matra::level::actors::player::Player": {
-      "additionalProperties": false,
-      "isComponent": true,
-      "isResource": false,
-      "long_name": "matra::level::actors::player::Player",
-      "properties": {},
-      "required": [],
-      "short_name": "Player",
-      "type": "object",
-      "typeInfo": "Struct"
-    },
-    "matra::level::actors::player::PlayerCamera": {
-      "additionalProperties": false,
-      "isComponent": true,
-      "isResource": false,
-      "long_name": "matra::level::actors::player::PlayerCamera",
-      "properties": {
-        "axis": {
-          "type": {
-            "$ref": "#/$defs/f32"
-          }
-        }
-      },
-      "required": [
-        "axis"
-      ],
-      "short_name": "PlayerCamera",
-      "type": "object",
-      "typeInfo": "Struct"
-    },
     "matra::level::utils::PortalMarker": {
       "additionalProperties": false,
       "isComponent": true,

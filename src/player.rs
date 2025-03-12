@@ -3,12 +3,10 @@ use bevy::{
   window::{CursorGrabMode, PrimaryWindow},
 };
 
-use {
-  crate::{
-    level::actors::{Player, PlayerCamera},
-    prelude::*,
-  },
-  std::f32::consts::PI,
+use crate::{
+  level::actors::{CameraLook, Player},
+  prelude::*,
+  utils::single,
 };
 
 #[derive(Resource, Deref, DerefMut)]
@@ -18,7 +16,7 @@ pub fn plugin(app: &mut App) {
   app
     .insert_resource(MouseLocked(true))
     .add_systems(Update, (mouse_lock, toggle_lock))
-    .add_systems(Update, (movement, rotation));
+    .add_systems(Update, (movement, rotation, dolly));
 }
 
 fn toggle_lock(
@@ -72,7 +70,7 @@ fn movement(
 
   // set controller basis
   controller.basis(TnuaBuiltinWalk {
-    desired_velocity: direction.normalize_or_zero() * 10.0,
+    desired_velocity: direction.normalize_or_zero() * 5.0,
     float_height: 1.5,
     ..default()
   });
@@ -81,31 +79,36 @@ fn movement(
 fn rotation(
   locked: Res<MouseLocked>,
   mut motion: EventReader<MouseMotion>,
-  mut player_transform: Query<&mut Transform, With<Player>>,
-  mut camera_transform: Query<
-    (&mut Transform, &mut PlayerCamera),
-    (With<Camera3d>, Without<Player>),
-  >,
+  mut player: Query<&mut Transform, With<Player>>,
+  mut camera: Query<&mut Rig, (With<Camera3d>, Without<Player>)>,
 ) {
-  const SENS: f32 = 0.0020;
+  const SENS: f32 = 0.0010_f32;
 
   if !locked.0 {
     return;
   }
 
-  let Ok(mut player_transform) = player_transform.get_single_mut() else {
-    return;
-  };
-  let Ok((mut camera_transform, mut camera)) =
-    camera_transform.get_single_mut()
-  else {
-    return;
-  };
+  single!(mut player, mut camera);
 
   for ev in motion.read() {
-    player_transform.rotate_y(-ev.delta.x * SENS);
+    let mut camera = camera.driver_mut::<YawPitch>();
 
-    camera.axis = (camera.axis - ev.delta.y * SENS).clamp(-PI / 2.0, PI / 2.0);
-    camera_transform.rotation = Quat::from_rotation_x(camera.axis);
+    // player.rotate_y(-ev.delta.x * SENS);
+    player.rotate_y(-ev.delta.x * SENS / 2.0);
+    camera.rotate_yaw_pitch(
+      0.0, // -ev.delta.x * SENS,
+      -ev.delta.y * SENS.to_degrees(),
+    );
+  }
+}
+
+fn dolly(
+  mut target: Query<&Transform, With<CameraLook>>,
+  mut rig: Query<&mut Rig>,
+) {
+  single!(target);
+
+  for mut rig in rig.iter_mut() {
+    rig.driver_mut::<LookAt>().target = target.translation;
   }
 }

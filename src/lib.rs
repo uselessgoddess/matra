@@ -6,6 +6,7 @@ pub mod level;
 pub mod pfx;
 pub mod player;
 mod render;
+mod utils;
 
 use {
   crate::{core::CorePlugin, pfx::PostFxPlugin},
@@ -36,6 +37,11 @@ impl Plugin for GamePlugin {
 pub mod prelude {
   pub use super::*;
 
+  mod dolly {
+    // merge `dolly` and `bevy-dolly`
+    pub use dolly::{dolly::*, prelude};
+  }
+
   pub use {
     avian3d::prelude::*,
     bevy_asset_loader::prelude::*,
@@ -45,6 +51,7 @@ pub mod prelude {
     bevy_tnua::prelude::*,
     bevy_tnua_avian3d::*,
     blenvy::*,
+    dolly::prelude::*,
     hanabi::prelude::*,
     iyes_progress::prelude::*,
   };

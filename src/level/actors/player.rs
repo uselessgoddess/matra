@@ -1,28 +1,22 @@
-use bevy::prelude::*;
+use crate::{GameState, prelude::*};
 
-use {avian3d::prelude::*, bevy_tnua::prelude::*, bevy_tnua_avian3d::*};
-
-use {
-  crate::GameState,
-  serde::{Deserialize, Serialize},
-};
-
-#[derive(Debug, Component, Reflect)]
-#[reflect(Component)]
+#[derive(Debug, Component)]
 pub struct Player;
 
-#[derive(Debug, Component, Reflect, Default)]
-#[reflect(Component)]
-#[require(super::PrimaryCamera)]
+#[derive(Debug, Component, Default)]
+#[require(Camera3d, super::PrimaryCamera)]
 pub struct PlayerCamera {
   pub axis: f32,
 }
 
+#[derive(Debug, Component)]
+pub struct CameraLook;
+
 pub fn plugin(app: &mut App) {
-  app
-    .register_type::<Player>()
-    .register_type::<PlayerCamera>()
-    .add_systems(Update, spawn.run_if(in_state(GameState::Playing)));
+  app.add_systems(Update, spawn.run_if(in_state(GameState::Playing)));
+
+  #[cfg(debug_assertions)]
+  app.add_systems(Update, camera_gizmos);
 }
 
 pub fn spawn(player: Query<Entity, Added<Player>>, mut commands: Commands) {
@@ -37,12 +31,20 @@ pub fn spawn(player: Query<Entity, Added<Player>>, mut commands: Commands) {
         TnuaAvian3dSensorShape(Collider::cylinder(0.0, 0.99)),
       ))
       .with_children(|parent| {
-        parent
-          .spawn((Camera3d::default(), Transform {
-            translation: Vec3::new(0.0, 1.95, 0.0),
-            ..default()
-          }))
-          .insert(PlayerCamera::default());
+        parent.spawn((
+          Transform::from_xyz(0.0, 1.95, 0.0),
+          PlayerCamera::default(),
+        ));
+        parent.spawn((Transform::from_xyz(0.0, 1.95, 5.0), CameraLook));
       });
+  }
+}
+
+fn camera_gizmos(
+  query: Query<&Transform, With<CameraLook>>,
+  mut gizmos: Gizmos,
+) {
+  for transform in query.iter() {
+    gizmos.cross(transform.to_isometry(), 1.0, Color::WHITE);
   }
 }
