@@ -1,12 +1,15 @@
-use bevy::{
-  input::mouse::MouseMotion,
-  window::{CursorGrabMode, PrimaryWindow},
-};
-
-use crate::{
-  level::actors::{CameraLook, Player},
-  prelude::*,
-  utils::single,
+use {
+  crate::{
+    config::GameConfig,
+    level::actors::{CameraLook, Player, PlayerCamera},
+    prelude::*,
+    utils::single,
+  },
+  bevy::{
+    input::mouse::MouseMotion,
+    window::{CursorGrabMode, PrimaryWindow},
+  },
+  noise::{NoiseFn, Perlin},
 };
 
 #[derive(Resource, Deref, DerefMut)]
@@ -16,7 +19,8 @@ pub fn plugin(app: &mut App) {
   app
     .insert_resource(MouseLocked(true))
     .add_systems(Update, (mouse_lock, toggle_lock))
-    .add_systems(Update, (movement, rotation, dolly));
+    .add_systems(Update, (rotation, target, dolly))
+    .add_systems(Update, movement);
 }
 
 fn toggle_lock(
@@ -70,7 +74,7 @@ fn movement(
 
   // set controller basis
   controller.basis(TnuaBuiltinWalk {
-    desired_velocity: direction.normalize_or_zero() * 5.0,
+    desired_velocity: direction.normalize_or_zero() * 6.5,
     float_height: 1.5,
     ..default()
   });
@@ -80,8 +84,10 @@ fn rotation(
   locked: Res<MouseLocked>,
   mut motion: EventReader<MouseMotion>,
   mut player: Query<&mut Transform, With<Player>>,
-  mut camera: Query<&mut Rig, (With<Camera3d>, Without<Player>)>,
+  mut camera: Query<&mut PlayerCamera>,
 ) {
+  use std::f32::consts::PI;
+
   const SENS: f32 = 0.0010_f32;
 
   if !locked.0 {
@@ -91,24 +97,54 @@ fn rotation(
   single!(mut player, mut camera);
 
   for ev in motion.read() {
-    let mut camera = camera.driver_mut::<YawPitch>();
-
-    // player.rotate_y(-ev.delta.x * SENS);
     player.rotate_y(-ev.delta.x * SENS / 2.0);
-    camera.rotate_yaw_pitch(
-      0.0, // -ev.delta.x * SENS,
-      -ev.delta.y * SENS.to_degrees(),
-    );
+
+    // camera.yaw = camera.yaw - ev.delta.x * SENS;
+    camera.pit =
+      (camera.pit - ev.delta.y * SENS).clamp(-PI / 2.0 + 0.1, PI / 2.0 - 0.1);
   }
 }
 
+fn target(
+  mut target: Query<&mut Transform, With<CameraLook>>,
+  mut camera: Query<&PlayerCamera>,
+) {
+  single!(mut target, camera);
+
+  let look = Quat::from_euler(EulerRot::YXZ, camera.yaw, camera.pit, 0.0)
+    .mul_vec3(Vec3::Z);
+
+  target.translation = look * -5.0;
+}
+
+fn sample_perlin(x: f32) -> f32 {
+  Perlin::default().get([x as f64]) as f32
+}
+
 fn dolly(
+  mut player: Query<&TnuaController, With<Player>>,
   mut target: Query<&Transform, With<CameraLook>>,
   mut rig: Query<&mut Rig>,
+  config: Res<GameConfig>,
+  time: Res<Time>,
 ) {
-  single!(target);
+  single!(player, target);
+
+  let mut offset = Vec2::ZERO;
+
+  // breathing
+  offset.y += sample_perlin(time.elapsed_secs() / 5.0) / 5.0;
+
+  let perlin = |x| sample_perlin(x + time.elapsed_secs() * 1.5);
+  // steps
+  if let Some(basis) = player.dynamic_basis()
+    && basis.effective_velocity().length() >= 0.1
+  {
+    offset +=
+      Vec2::new(perlin(1.3), perlin(3.7)) * config.camera.dolly.steps / 100.0;
+  }
 
   for mut rig in rig.iter_mut() {
-    rig.driver_mut::<LookAt>().target = target.translation;
+    rig.driver_mut::<LookAt>().target = target.translation + offset.extend(0.0);
   }
 }

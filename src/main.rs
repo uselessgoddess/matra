@@ -36,15 +36,6 @@ fn daylight_cycle(
 fn main() {
   App::new()
     .add_plugins(GamePlugin)
-    // loading
-    .add_plugins(
-      ProgressPlugin::<GameState>::new()
-        .with_state_transition(GameState::Loading, GameState::Playing),
-    )
-    .add_loading_state(
-      LoadingState::new(GameState::Loading)
-        .continue_to_state(GameState::Playing),
-    )
     .insert_resource(AtmosphereModel::default())
     .insert_resource(CycleTimer(Timer::new(
       bevy::utils::Duration::from_millis(5),

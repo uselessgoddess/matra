@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use crate::prelude::*;
 
 mod atmosphere;
 mod dev;
@@ -14,7 +14,10 @@ impl Plugin for CorePlugin {
       .add_plugins(system::plugin)
       .add_plugins(physics::plugin)
       .add_plugins(atmosphere::plugin)
-      .add_plugins(hanabi::plugin)
-      .add_plugins(dev::plugin);
+      .add_plugins(hanabi::plugin);
+
+    if debug::dev() {
+      app.add_plugins(dev::plugin);
+    }
   }
 }
