@@ -1,0 +1,5 @@
+({
+  "config": File (
+    path: "global.toml"
+  ),
+})

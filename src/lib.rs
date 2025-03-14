@@ -1,7 +1,9 @@
 #![feature(let_chains)]
 
+mod config;
 mod core;
 mod debug;
+mod fs;
 pub mod level;
 pub mod pfx;
 pub mod player;
@@ -30,9 +32,11 @@ impl Plugin for GamePlugin {
       .add_plugins(BlenvyPlugin::default())
       .init_state::<GameState>()
       .add_plugins((AutoExposurePlugin, PostFxPlugin))
-      .add_plugins((level::plugin, player::plugin));
+      .add_plugins((fs::plugin, level::plugin, player::plugin));
   }
 }
+
+pub use config::GameConfig;
 
 pub mod prelude {
   pub use super::*;

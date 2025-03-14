@@ -3,14 +3,23 @@ use crate::{GameState, prelude::*};
 #[derive(Debug, Component)]
 pub struct Player;
 
+impl Player {
+  pub const HEIGHT: f32 = 1.95;
+}
+
 #[derive(Debug, Component, Default)]
 #[require(Camera3d, super::PrimaryCamera)]
 pub struct PlayerCamera {
-  pub axis: f32,
+  pub yaw: f32,
+  pub pit: f32,
 }
 
 #[derive(Debug, Component)]
 pub struct CameraLook;
+
+impl CameraLook {
+  pub const ARM: f32 = -5.0;
+}
 
 pub fn plugin(app: &mut App) {
   app.add_systems(Update, spawn.run_if(in_state(GameState::Playing)));
@@ -32,10 +41,11 @@ pub fn spawn(player: Query<Entity, Added<Player>>, mut commands: Commands) {
       ))
       .with_children(|parent| {
         parent.spawn((
-          Transform::from_xyz(0.0, 1.95, 0.0),
+          Transform::from_xyz(0.0, Player::HEIGHT, 0.0),
           PlayerCamera::default(),
         ));
-        parent.spawn((Transform::from_xyz(0.0, 1.95, 5.0), CameraLook));
+        parent
+          .spawn((Transform::from_xyz(0.0, 1.95, CameraLook::ARM), CameraLook));
       });
   }
 }
@@ -44,6 +54,10 @@ fn camera_gizmos(
   query: Query<&Transform, With<CameraLook>>,
   mut gizmos: Gizmos,
 ) {
+  if !debug::gizmos() {
+    return;
+  }
+
   for transform in query.iter() {
     gizmos.cross(transform.to_isometry(), 1.0, Color::WHITE);
   }

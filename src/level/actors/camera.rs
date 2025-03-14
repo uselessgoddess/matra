@@ -1,5 +1,7 @@
 use {
-  crate::{GameState, pfx::PostFxSettings, prelude::*, render},
+  crate::{
+    GameState, level::actors::Player, pfx::PostFxSettings, prelude::*, render,
+  },
   bevy::{
     core_pipeline::{bloom::Bloom, tonemapping::Tonemapping},
     pbr::{ScreenSpaceAmbientOcclusion, ScreenSpaceReflections, VolumetricFog},
@@ -7,6 +9,7 @@ use {
 };
 
 #[derive(Component, Default)]
+#[require(Camera3d)]
 pub struct PrimaryCamera;
 
 pub fn plugin(app: &mut App) {
@@ -43,9 +46,8 @@ pub fn spawn(
 
     commands.insert(
       Rig::builder()
-        .with(Position::new(Vec3::ZERO))
+        .with(Position::new(Vec3::new(0.0, Player::HEIGHT, 0.0)))
         .with(LookAt::new(Vec3::ZERO))
-        .with(YawPitch::new())
         .with(Smooth::new_position_rotation(1.0, 1.0))
         .build(),
     );
