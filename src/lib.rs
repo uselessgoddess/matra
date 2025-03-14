@@ -38,6 +38,7 @@ impl Plugin for GamePlugin {
 
 pub use config::GameConfig;
 
+#[allow(ambiguous_glob_reexports, unused_imports)]
 pub mod prelude {
   pub use super::*;
 

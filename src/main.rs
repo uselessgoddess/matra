@@ -1,7 +1,4 @@
-use bevy::{
-  pbr::{VolumetricFog, VolumetricLight},
-  prelude::*,
-};
+use bevy::prelude::*;
 //
 use matra::{level::actors::Player, prelude::*};
 
@@ -42,7 +39,6 @@ fn main() {
       TimerMode::Repeating,
     )))
     .add_systems(Startup, setup)
-    .add_systems(Update, tweak_scene)
     .add_systems(Update, daylight_cycle)
     .run();
 }
@@ -67,20 +63,4 @@ fn setup(
     HideUntilReady,
     GameWorldTag,
   ));
-}
-
-fn tweak_scene(
-  mut commands: Commands,
-  mut lights: Query<(Entity, &mut DirectionalLight), Changed<DirectionalLight>>,
-) {
-  for (entity, mut light) in lights.iter_mut() {
-    light.shadows_enabled = true;
-    commands.entity(entity).insert(VolumetricLight);
-  }
-}
-
-fn tweak_camera(mut camera: Query<(&mut VolumetricFog,)>) {
-  for (mut fog,) in camera.iter_mut() {
-    fog.ambient_intensity = 0.1;
-  }
 }

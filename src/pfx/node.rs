@@ -2,7 +2,6 @@ use bevy::{
   ecs::query::QueryItem,
   prelude::*,
   render::{
-    extract_component::DynamicUniformIndex,
     render_asset::RenderAssets,
     render_graph::{NodeRunError, RenderGraphContext, ViewNode},
     render_resource::*,
