@@ -2,7 +2,10 @@ mod camera;
 mod lights;
 mod player;
 
-pub use {camera::*, player::*};
+pub use {
+  camera::PrimaryCamera,
+  player::{CameraLook, Player, PlayerCamera},
+};
 
 use bevy::prelude::*;
 

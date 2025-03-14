@@ -5,7 +5,7 @@ pub fn plugin(app: &mut App) {
     .add_plugins(
       DefaultPlugins.set(ImagePlugin::default_nearest()).set(WindowPlugin {
         primary_window: Window {
-          // resolution: WindowResolution::new(1920.0, 1080.0),
+          resolution: WindowResolution::new(1920.0, 1080.0),
           title: "Matra".to_string(),
           visible: true,
           ..default()

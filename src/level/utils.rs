@@ -1,7 +1,6 @@
 use {
   crate::{level::actors::PrimaryCamera, prelude::*},
   bevy::utils::HashMap,
-  hanabi::Gradient,
 };
 
 pub fn plugin(app: &mut App) {

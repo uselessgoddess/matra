@@ -20,11 +20,7 @@ use {
   std::any::TypeId,
 };
 
-#[cfg(egui_dock_gizmo)]
-use transform_gizmo_egui::GizmoMode;
-
 /// Placeholder type if gizmo is disabled.
-#[cfg(not(egui_dock_gizmo))]
 #[derive(Clone, Copy)]
 struct GizmoMode;
 
@@ -38,7 +34,7 @@ pub fn plugin(app: &mut App) {
       show_ui_system
         .before(EguiPostUpdateSet::ProcessOutput)
         .before(bevy_egui::end_pass_system)
-        .before(bevy::transform::TransformSystem::TransformPropagate),
+        .before(TransformSystem::TransformPropagate),
     )
     .add_systems(PostUpdate, set_camera_viewport.after(show_ui_system))
     .add_systems(Update, set_gizmo_mode)
@@ -107,13 +103,6 @@ fn set_gizmo_mode(
   input: Res<ButtonInput<KeyCode>>,
   mut ui_state: ResMut<UiState>,
 ) {
-  #[cfg(egui_dock_gizmo)]
-  let keybinds = [
-    (KeyCode::KeyR, GizmoMode::Rotate),
-    (KeyCode::KeyT, GizmoMode::Translate),
-    (KeyCode::KeyS, GizmoMode::Scale),
-  ];
-  #[cfg(not(egui_dock_gizmo))]
   let keybinds = [];
   for (key, mode) in keybinds {
     if input.just_pressed(key) {
@@ -154,9 +143,6 @@ impl UiState {
       selected_entities: SelectedEntities::default(),
       selection: InspectorSelection::Entities,
       viewport_rect: egui::Rect::NOTHING,
-      #[cfg(egui_dock_gizmo)]
-      gizmo_mode: GizmoMode::Translate,
-      #[cfg(not(egui_dock_gizmo))]
       gizmo_mode: GizmoMode,
     }
   }
@@ -195,7 +181,7 @@ struct TabViewer<'a> {
 impl egui_dock::TabViewer for TabViewer<'_> {
   type Tab = EguiWindow;
 
-  fn ui(&mut self, ui: &mut egui_dock::egui::Ui, window: &mut Self::Tab) {
+  fn ui(&mut self, ui: &mut egui::Ui, window: &mut Self::Tab) {
     let type_registry = self.world.resource::<AppTypeRegistry>().0.clone();
     let type_registry = type_registry.read();
 

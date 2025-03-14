@@ -107,7 +107,7 @@ fn rotation(
 
 fn target(
   mut target: Query<&mut Transform, With<CameraLook>>,
-  mut camera: Query<&PlayerCamera>,
+  camera: Query<&PlayerCamera>,
 ) {
   single!(mut target, camera);
 
@@ -122,8 +122,8 @@ fn sample_perlin(x: f32) -> f32 {
 }
 
 fn dolly(
-  mut player: Query<&TnuaController, With<Player>>,
-  mut target: Query<&Transform, With<CameraLook>>,
+  player: Query<&TnuaController, With<Player>>,
+  target: Query<&Transform, With<CameraLook>>,
   mut rig: Query<&mut Rig>,
   config: Res<GameConfig>,
   time: Res<Time>,
