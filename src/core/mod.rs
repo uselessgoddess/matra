@@ -21,3 +21,5 @@ impl Plugin for CorePlugin {
     }
   }
 }
+
+pub use atmosphere::NishitaPlus;

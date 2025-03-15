@@ -1,7 +1,7 @@
 #![feature(let_chains)]
 
 mod config;
-mod core;
+pub mod core;
 mod debug;
 mod fs;
 pub mod level;
