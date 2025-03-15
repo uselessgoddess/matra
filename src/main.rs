@@ -5,10 +5,12 @@ use matra::{level::actors::Player, prelude::*};
 #[derive(Resource)]
 struct CycleTimer(Timer);
 
-use bevy::pbr::light_consts::lux::AMBIENT_DAYLIGHT;
+use {
+  bevy::pbr::light_consts::lux::AMBIENT_DAYLIGHT, matra::core::NishitaPlus,
+};
 
 fn daylight_cycle(
-  mut atmosphere: AtmosphereMut<Nishita>,
+  mut atmosphere: AtmosphereMut<NishitaPlus>,
   mut query: Query<(&mut Transform, &mut DirectionalLight)>,
   mut timer: ResMut<CycleTimer>,
   time: Res<Time>,
@@ -33,7 +35,7 @@ fn daylight_cycle(
 fn main() {
   App::new()
     .add_plugins(GamePlugin)
-    .insert_resource(AtmosphereModel::default())
+    .insert_resource(AtmosphereModel::new(NishitaPlus::default()))
     .insert_resource(CycleTimer(Timer::new(
       bevy::utils::Duration::from_millis(5),
       TimerMode::Repeating,
