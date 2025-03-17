@@ -1,29 +1,36 @@
 use {
   crate::prelude::*,
   bevy::render::{RenderApp, render_resource::ShaderType},
+  bevy_atmosphere::{
+    model::RegisterAtmosphereModel, pipeline::AtmosphereImageBindGroupLayout,
+  },
 };
 
-pub struct CloudsPlugin;
+pub struct NishitaPlugin;
 
-pub fn plugin(app: &mut App) {
-  app.add_atmosphere_model::<NishitaPlus>();
-}
-
-impl Plugin for CloudsPlugin {
-  fn build(&self, app: &mut App) {}
+impl Plugin for NishitaPlugin {
+  fn build(&self, app: &mut App) {
+    app
+      .insert_resource(AtmosphereModel::new(NishitaPlus::default()))
+      .add_systems(Update, nishita_time);
+  }
 
   fn finish(&self, app: &mut App) {
     let render_app = app.sub_app_mut(RenderApp);
 
-    render_app.init_resource::<bevy_atmosphere::pipeline::AtmosphereImageBindGroupLayout>();
+    render_app.init_resource::<AtmosphereImageBindGroupLayout>();
 
     app.add_atmosphere_model::<NishitaPlus>();
   }
 }
 
+fn nishita_time(mut atmosphere: AtmosphereMut<NishitaPlus>, time: Res<Time>) {
+  atmosphere.time += time.delta_secs();
+}
+
 #[derive(Atmospheric, ShaderType, Reflect, Debug, Clone)]
 #[uniform(0, NishitaPlus)]
-#[internal(".shaders/nishita.wgsl")]
+#[internal("core/atmosphere/shaders/nishita.wgsl")]
 pub struct NishitaPlus {
   pub ray_origin: Vec3,
   pub sun_position: Vec3,
@@ -35,6 +42,14 @@ pub struct NishitaPlus {
   pub mie_coefficient: f32,
   pub mie_scale_height: f32,
   pub mie_direction: f32,
+  // plus
+  pub time: f32,
+}
+
+impl From<&NishitaPlus> for NishitaPlus {
+  fn from(nishita: &NishitaPlus) -> Self {
+    nishita.clone()
+  }
 }
 
 impl Default for NishitaPlus {
@@ -50,12 +65,8 @@ impl Default for NishitaPlus {
       mie_coefficient: 21e-6,
       mie_scale_height: 1.2e3,
       mie_direction: 0.758,
+      //
+      time: 0.0,
     }
-  }
-}
-
-impl From<&NishitaPlus> for NishitaPlus {
-  fn from(nishita: &NishitaPlus) -> Self {
-    nishita.clone()
   }
 }

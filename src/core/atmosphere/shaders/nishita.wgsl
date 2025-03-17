@@ -10,6 +10,8 @@ struct Nishita {
     mie_coefficient: f32,
     mie_scale_height: f32,
     mie_direction: f32,
+    //
+    time: f32,
 }
 
 const PI: f32 = 3.141592653589793;
@@ -122,9 +124,14 @@ fn render_nishita(r_full: vec3<f32>, r0: vec3<f32>, p_sun_full: vec3<f32>, i_sun
     return i_sun * (p_rlh * k_rlh * total_rlh + p_mie * k_mie * total_mie);
 }
 
+fn render_clouds(ray: vec3<f32>) -> vec4<f32> {
+    return vec4f(1.0, 1.0, 1.0, 0.0);
+}
+
 @group(0) @binding(0)
 var<uniform> nishita: Nishita;
 
+// cubemap output
 @group(1) @binding(0)
 var image: texture_storage_2d_array<rgba16float, write>;
 
@@ -158,7 +165,7 @@ fn main(@builtin(global_invocation_id) invocation_id: vec3<u32>, @builtin(num_wo
         }
     }
 
-    let render = vec3<f32>(1.0, 1.0, 1.0) - render_nishita(
+    var render = render_nishita(
         ray,
         nishita.ray_origin,
         nishita.sun_position,
@@ -170,6 +177,16 @@ fn main(@builtin(global_invocation_id) invocation_id: vec3<u32>, @builtin(num_wo
         nishita.rayleigh_scale_height,
         nishita.mie_scale_height,
         nishita.mie_direction,
+    );
+
+    var res_t = 2000.0;
+
+    let clouds = render_clouds(normalize(ray));
+
+    let t = pow(1.0 - 0.7 * ray.y, 15.0);
+    render = mix(render, clouds.rgb, clouds.a * (1.0 - t));
+    render = mix(render,
+        render * vec3f(0.8, 0.9, 2.2), 0.3
     );
 
     textureStore(
