@@ -1,6 +1,6 @@
 mod nishita;
 
-use {crate::prelude::*, bevy::render::render_resource::ShaderType};
+use crate::prelude::*;
 
 pub fn plugin(app: &mut App) {
   app

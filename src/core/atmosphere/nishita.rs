@@ -1,9 +1,7 @@
 use {
   crate::prelude::*,
   bevy::render::{RenderApp, render_resource::ShaderType},
-  bevy_atmosphere::{
-    model::RegisterAtmosphereModel, pipeline::AtmosphereImageBindGroupLayout,
-  },
+  bevy_atmosphere::pipeline::AtmosphereImageBindGroupLayout,
 };
 
 pub struct NishitaPlugin;
