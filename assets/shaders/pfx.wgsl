@@ -38,7 +38,7 @@ fn fragment(
     let luma = luma(base_color.xyz);
 
     if (luma > threshold) {
-        return vec4f(base_color.xyz * 1.5, 1.0);
+        return vec4f(aces(base_color.xyz * 2.0), 1.0);
     } else {
         return vec4f(0.0, 0.0, 0.0, 1.0);
     }

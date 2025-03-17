@@ -34,7 +34,7 @@ pub fn spawn(
         near: 1e-8,
         ..default()
       }))
-      // .insert(PostFxSettings::new(8, &assets))
+      .insert(PostFxSettings::new(8, &assets))
       .insert(render::Layers::all());
 
     dolly(&mut commands);

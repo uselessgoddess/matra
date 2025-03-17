@@ -23761,6 +23761,85 @@
       "type": "object",
       "typeInfo": "Struct"
     },
+    "matra::core::atmosphere::nishita::NishitaPlus": {
+      "additionalProperties": false,
+      "isComponent": false,
+      "isResource": false,
+      "long_name": "matra::core::atmosphere::nishita::NishitaPlus",
+      "properties": {
+        "atmosphere_radius": {
+          "type": {
+            "$ref": "#/$defs/f32"
+          }
+        },
+        "mie_coefficient": {
+          "type": {
+            "$ref": "#/$defs/f32"
+          }
+        },
+        "mie_direction": {
+          "type": {
+            "$ref": "#/$defs/f32"
+          }
+        },
+        "mie_scale_height": {
+          "type": {
+            "$ref": "#/$defs/f32"
+          }
+        },
+        "planet_radius": {
+          "type": {
+            "$ref": "#/$defs/f32"
+          }
+        },
+        "ray_origin": {
+          "type": {
+            "$ref": "#/$defs/glam::Vec3"
+          }
+        },
+        "rayleigh_coefficient": {
+          "type": {
+            "$ref": "#/$defs/glam::Vec3"
+          }
+        },
+        "rayleigh_scale_height": {
+          "type": {
+            "$ref": "#/$defs/f32"
+          }
+        },
+        "sun_intensity": {
+          "type": {
+            "$ref": "#/$defs/f32"
+          }
+        },
+        "sun_position": {
+          "type": {
+            "$ref": "#/$defs/glam::Vec3"
+          }
+        },
+        "time": {
+          "type": {
+            "$ref": "#/$defs/f32"
+          }
+        }
+      },
+      "required": [
+        "ray_origin",
+        "sun_position",
+        "sun_intensity",
+        "planet_radius",
+        "atmosphere_radius",
+        "rayleigh_coefficient",
+        "rayleigh_scale_height",
+        "mie_coefficient",
+        "mie_scale_height",
+        "mie_direction",
+        "time"
+      ],
+      "short_name": "NishitaPlus",
+      "type": "object",
+      "typeInfo": "Struct"
+    },
     "matra::level::utils::PortalMarker": {
       "additionalProperties": false,
       "isComponent": true,
