@@ -35,7 +35,6 @@ fn daylight_cycle(
 fn main() {
   App::new()
     .add_plugins(GamePlugin)
-    .insert_resource(AtmosphereModel::new(NishitaPlus::default()))
     .insert_resource(CycleTimer(Timer::new(
       bevy::utils::Duration::from_millis(5),
       TimerMode::Repeating,
