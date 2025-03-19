@@ -1,8 +1,7 @@
 mod torch;
 
 use {
-  super::utils::register, crate::prelude::*,
-  bevy::reflect::GetTypeRegistration, std::any::type_name,
+  crate::prelude::*, bevy::reflect::GetTypeRegistration, std::any::type_name,
 };
 
 trait Spawn {
@@ -49,7 +48,7 @@ fn register<T: Spawn + Component + GetTypeRegistration>(app: &mut App) {
     .add_systems(Update, spawn::<T>.run_if(in_state(GameState::Playing)));
 }
 
-pub fn spawn<T: Spawn + Component>(
+fn spawn<T: Spawn + Component>(
   mut commands: Commands,
   added: Query<(Entity, &T)>,
   mut effects: ResMut<Assets<EffectAsset>>,
