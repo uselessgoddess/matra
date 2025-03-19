@@ -1,6 +1,7 @@
 use {
   crate::{
     config::GameConfig,
+    core::noise::perlin_1d,
     level::actors::{CameraLook, Player, PlayerCamera},
     prelude::*,
     utils::single,
@@ -9,7 +10,6 @@ use {
     input::mouse::MouseMotion,
     window::{CursorGrabMode, PrimaryWindow},
   },
-  noise::{NoiseFn, Perlin},
 };
 
 #[derive(Resource, Deref, DerefMut)]
@@ -117,10 +117,6 @@ fn target(
   target.translation = look * -5.0;
 }
 
-fn sample_perlin(x: f32) -> f32 {
-  Perlin::default().get([x as f64]) as f32
-}
-
 fn dolly(
   player: Query<&TnuaController, With<Player>>,
   target: Query<&Transform, With<CameraLook>>,
@@ -133,9 +129,9 @@ fn dolly(
   let mut offset = Vec2::ZERO;
 
   // breathing
-  offset.y += sample_perlin(time.elapsed_secs() / 5.0) / 5.0;
+  offset.y += perlin_1d(time.elapsed_secs() / 5.0) / 5.0;
 
-  let perlin = |x| sample_perlin(x + time.elapsed_secs() * 1.5);
+  let perlin = |x| perlin_1d(x + time.elapsed_secs() * 1.5);
   // steps
   if let Some(basis) = player.dynamic_basis()
     && basis.effective_velocity().length() >= 0.1

@@ -3,6 +3,7 @@ use crate::prelude::*;
 mod atmosphere;
 mod dev;
 mod hanabi;
+pub mod noise;
 mod physics;
 mod system;
 
