@@ -18,7 +18,7 @@ fn daylight_cycle(
   timer.0.tick(time.delta());
 
   if timer.0.finished() {
-    let t = time.elapsed_secs_wrapped() / 2.0;
+    let t = time.elapsed_secs_wrapped() / 5.0;
     atmosphere.sun_position = Vec3::new(0., t.sin(), t.cos());
     // atmosphere.mie_coefficient = 5e-5;
 

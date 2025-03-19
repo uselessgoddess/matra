@@ -43,6 +43,7 @@ pub fn spawn(player: Query<Entity, Added<Player>>, mut commands: Commands) {
         parent.spawn((
           Transform::from_xyz(0.0, Player::HEIGHT, 0.0),
           PlayerCamera::default(),
+          Camera { hdr: true, ..default() },
         ));
         parent
           .spawn((Transform::from_xyz(0.0, 1.95, CameraLook::ARM), CameraLook));

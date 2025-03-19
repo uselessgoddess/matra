@@ -56,7 +56,7 @@ impl FromWorld for PostFxPipeline {
           shader_defs: vec![],
           entry_point: "fragment".into(),
           targets: vec![Some(ColorTargetState {
-            format: TextureFormat::Rgba8UnormSrgb,
+            format: TextureFormat::Rgba16Float,
             blend: None,
             write_mask: ColorWrites::ALL,
           })],

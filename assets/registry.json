@@ -660,19 +660,6 @@
       "type": "array",
       "typeInfo": "List"
     },
-    "alloc::vec::Vec<bevy_hanabi::spawn::Initializer>": {
-      "isComponent": false,
-      "isResource": false,
-      "items": {
-        "type": {
-          "$ref": "#/$defs/bevy_hanabi::spawn::Initializer"
-        }
-      },
-      "long_name": "alloc::vec::Vec<bevy_hanabi::spawn::Initializer>",
-      "short_name": "Vec<Initializer>",
-      "type": "array",
-      "typeInfo": "List"
-    },
     "alloc::vec::Vec<bevy_math::rects::urect::URect>": {
       "isComponent": false,
       "isResource": false,
@@ -8715,11 +8702,6 @@
           "type": {
             "$ref": "#/$defs/bevy_asset::handle::Handle<bevy_hanabi::asset::EffectAsset>"
           }
-        },
-        "z_layer_2d": {
-          "type": {
-            "$ref": "#/$defs/core::option::Option<f32>"
-          }
         }
       },
       "required": [
@@ -8829,14 +8811,9 @@
             "$ref": "#/$defs/bevy_hanabi::asset::AlphaMode"
           }
         },
-        "capacities": {
+        "capacity": {
           "type": {
-            "$ref": "#/$defs/alloc::vec::Vec<u32>"
-          }
-        },
-        "init": {
-          "type": {
-            "$ref": "#/$defs/alloc::vec::Vec<bevy_hanabi::spawn::Initializer>"
+            "$ref": "#/$defs/u32"
           }
         },
         "mesh": {
@@ -8859,9 +8836,9 @@
             "$ref": "#/$defs/alloc::string::String"
           }
         },
-        "ribbon_group": {
+        "prng_seed": {
           "type": {
-            "$ref": "#/$defs/core::option::Option<usize>"
+            "$ref": "#/$defs/u32"
           }
         },
         "simulation_condition": {
@@ -8874,6 +8851,11 @@
             "$ref": "#/$defs/bevy_hanabi::SimulationSpace"
           }
         },
+        "spawner": {
+          "type": {
+            "$ref": "#/$defs/bevy_hanabi::spawn::SpawnerSettings"
+          }
+        },
         "z_layer_2d": {
           "type": {
             "$ref": "#/$defs/f32"
@@ -8882,11 +8864,12 @@
       },
       "required": [
         "name",
-        "capacities",
-        "init",
+        "capacity",
+        "spawner",
         "z_layer_2d",
         "simulation_space",
         "simulation_condition",
+        "prng_seed",
         "motion_integration",
         "module",
         "alpha_mode"
@@ -9254,6 +9237,7 @@
       "long_name": "bevy_hanabi::graph::expr::BinaryOperator",
       "oneOf": [
         "Add",
+        "Atan2",
         "Cross",
         "Distance",
         "Div",
@@ -9426,6 +9410,20 @@
             }
           ],
           "short_name": "Attribute",
+          "type": "array",
+          "typeInfo": "Tuple"
+        },
+        {
+          "items": false,
+          "long_name": "ParentAttribute",
+          "prefixItems": [
+            {
+              "type": {
+                "$ref": "#/$defs/bevy_hanabi::graph::expr::AttributeExpr"
+              }
+            }
+          ],
+          "short_name": "ParentAttribute",
           "type": "array",
           "typeInfo": "Tuple"
         },
@@ -9709,6 +9707,9 @@
       "long_name": "bevy_hanabi::graph::expr::UnaryOperator",
       "oneOf": [
         "Abs",
+        "Acos",
+        "Asin",
+        "Atan",
         "All",
         "Any",
         "Ceil",
@@ -9724,6 +9725,7 @@
         "Normalize",
         "Pack4x8snorm",
         "Pack4x8unorm",
+        "Round",
         "Saturate",
         "Sign",
         "Sin",
@@ -9809,43 +9811,6 @@
       "type": "object",
       "typeInfo": "Struct"
     },
-    "bevy_hanabi::spawn::Cloner": {
-      "additionalProperties": false,
-      "isComponent": false,
-      "isResource": false,
-      "long_name": "bevy_hanabi::spawn::Cloner",
-      "properties": {
-        "lifetime": {
-          "type": {
-            "$ref": "#/$defs/f32"
-          }
-        },
-        "period": {
-          "type": {
-            "$ref": "#/$defs/bevy_hanabi::spawn::CpuValue<f32>"
-          }
-        },
-        "src_group_index": {
-          "type": {
-            "$ref": "#/$defs/u32"
-          }
-        },
-        "starts_active": {
-          "type": {
-            "$ref": "#/$defs/bool"
-          }
-        }
-      },
-      "required": [
-        "src_group_index",
-        "period",
-        "lifetime",
-        "starts_active"
-      ],
-      "short_name": "Cloner",
-      "type": "object",
-      "typeInfo": "Struct"
-    },
     "bevy_hanabi::spawn::CpuValue<f32>": {
       "isComponent": false,
       "isResource": false,
@@ -9884,53 +9849,25 @@
       "type": "object",
       "typeInfo": "Enum"
     },
-    "bevy_hanabi::spawn::Initializer": {
-      "isComponent": false,
-      "isResource": false,
-      "long_name": "bevy_hanabi::spawn::Initializer",
-      "oneOf": [
-        {
-          "items": false,
-          "long_name": "Spawner",
-          "prefixItems": [
-            {
-              "type": {
-                "$ref": "#/$defs/bevy_hanabi::spawn::Spawner"
-              }
-            }
-          ],
-          "short_name": "Spawner",
-          "type": "array",
-          "typeInfo": "Tuple"
-        },
-        {
-          "items": false,
-          "long_name": "Cloner",
-          "prefixItems": [
-            {
-              "type": {
-                "$ref": "#/$defs/bevy_hanabi::spawn::Cloner"
-              }
-            }
-          ],
-          "short_name": "Cloner",
-          "type": "array",
-          "typeInfo": "Tuple"
-        }
-      ],
-      "short_name": "Initializer",
-      "type": "object",
-      "typeInfo": "Enum"
-    },
-    "bevy_hanabi::spawn::Spawner": {
+    "bevy_hanabi::spawn::SpawnerSettings": {
       "additionalProperties": false,
       "isComponent": false,
       "isResource": false,
-      "long_name": "bevy_hanabi::spawn::Spawner",
+      "long_name": "bevy_hanabi::spawn::SpawnerSettings",
       "properties": {
         "count": {
           "type": {
             "$ref": "#/$defs/bevy_hanabi::spawn::CpuValue<f32>"
+          }
+        },
+        "cycle_count": {
+          "type": {
+            "$ref": "#/$defs/u32"
+          }
+        },
+        "emit_on_start": {
+          "type": {
+            "$ref": "#/$defs/bool"
           }
         },
         "period": {
@@ -9947,21 +9884,17 @@
           "type": {
             "$ref": "#/$defs/bool"
           }
-        },
-        "starts_immediately": {
-          "type": {
-            "$ref": "#/$defs/bool"
-          }
         }
       },
       "required": [
         "count",
         "spawn_duration",
         "period",
+        "cycle_count",
         "starts_active",
-        "starts_immediately"
+        "emit_on_start"
       ],
-      "short_name": "Spawner",
+      "short_name": "SpawnerSettings",
       "type": "object",
       "typeInfo": "Struct"
     },
@@ -22710,33 +22643,6 @@
       "type": "object",
       "typeInfo": "Enum"
     },
-    "core::option::Option<usize>": {
-      "isComponent": false,
-      "isResource": false,
-      "long_name": "core::option::Option<usize>",
-      "oneOf": [
-        {
-          "long_name": "None"
-        },
-        {
-          "items": false,
-          "long_name": "Some",
-          "prefixItems": [
-            {
-              "type": {
-                "$ref": "#/$defs/usize"
-              }
-            }
-          ],
-          "short_name": "Some",
-          "type": "array",
-          "typeInfo": "Tuple"
-        }
-      ],
-      "short_name": "Option<usize>",
-      "type": "object",
-      "typeInfo": "Enum"
-    },
     "f32": {
       "isComponent": false,
       "isResource": false,
@@ -23837,6 +23743,50 @@
         "time"
       ],
       "short_name": "NishitaPlus",
+      "type": "object",
+      "typeInfo": "Struct"
+    },
+    "matra::level::actors::lights::NoisedLight": {
+      "additionalProperties": false,
+      "isComponent": true,
+      "isResource": false,
+      "long_name": "matra::level::actors::lights::NoisedLight",
+      "properties": {
+        "factor": {
+          "type": {
+            "$ref": "#/$defs/f32"
+          }
+        },
+        "speed": {
+          "type": {
+            "$ref": "#/$defs/f32"
+          }
+        }
+      },
+      "required": [
+        "factor",
+        "speed"
+      ],
+      "short_name": "NoisedLight",
+      "type": "object",
+      "typeInfo": "Struct"
+    },
+    "matra::level::particles::Torch": {
+      "additionalProperties": false,
+      "isComponent": true,
+      "isResource": false,
+      "long_name": "matra::level::particles::Torch",
+      "properties": {
+        "radius": {
+          "type": {
+            "$ref": "#/$defs/f32"
+          }
+        }
+      },
+      "required": [
+        "radius"
+      ],
+      "short_name": "Torch",
       "type": "object",
       "typeInfo": "Struct"
     },
