@@ -57,7 +57,7 @@ pub mod prelude {
     bevy_tnua_avian3d::*,
     blenvy::*,
     dolly::prelude::*,
-    hanabi::prelude::*,
+    hanabi::prelude::{Gradient, *},
     iyes_progress::prelude::*,
   };
 }

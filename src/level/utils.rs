@@ -3,16 +3,6 @@ use {
   bevy::utils::HashMap,
 };
 
-macro_rules! register {
-  ($($marker:ident)*) => {$(
-    #[derive(Debug, Default, Clone, Component, Reflect)]
-    #[reflect(Component)]
-    pub struct $marker;
-  )*};
-}
-
-pub(crate) use register;
-
 pub fn plugin(app: &mut App) {
   app.register_type::<PortalMarker>().add_systems(Update, spawn);
 }
