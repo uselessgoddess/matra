@@ -2,21 +2,29 @@ use crate::{GameState, core::noise::perlin_1d, prelude::*};
 
 #[derive(Component, Reflect)]
 #[reflect(Component)]
-pub struct NoisedLight {
+// Hack to add component to the Light entry in blender
+pub struct NoisedLightHack {
+  intensity: f32,
   factor: f32,
   speed: f32,
 }
 
 pub fn plugin(app: &mut App) {
   app
-    .register_type::<NoisedLight>()
+    .register_type::<NoisedLightHack>()
     .add_systems(Update, (noised, spot).run_if(in_state(GameState::Playing)));
 }
 
-fn noised(mut query: Query<(&mut PointLight, &NoisedLight)>, time: Res<Time>) {
-  for (mut point, noised) in query.iter_mut() {
-    point.intensity +=
-      noised.factor * noised.speed * (perlin_1d(time.elapsed_secs()) - 0.5);
+fn noised(
+  mut q_child: Query<(&mut PointLight, &Parent)>,
+  mut q_parent: Query<&NoisedLightHack>,
+  time: Res<Time>,
+) {
+  for (mut light, parent) in q_child.iter_mut() {
+    if let Ok(noised) = q_parent.get(parent.get()) {
+      light.intensity = noised.intensity
+        + noised.factor * (perlin_1d(time.elapsed_secs() * noised.speed) - 0.5);
+    }
   }
 }
 
