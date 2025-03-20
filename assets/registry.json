@@ -23746,13 +23746,18 @@
       "type": "object",
       "typeInfo": "Struct"
     },
-    "matra::level::actors::lights::NoisedLight": {
+    "matra::level::actors::lights::NoisedLightHack": {
       "additionalProperties": false,
       "isComponent": true,
       "isResource": false,
-      "long_name": "matra::level::actors::lights::NoisedLight",
+      "long_name": "matra::level::actors::lights::NoisedLightHack",
       "properties": {
         "factor": {
+          "type": {
+            "$ref": "#/$defs/f32"
+          }
+        },
+        "intensity": {
           "type": {
             "$ref": "#/$defs/f32"
           }
@@ -23764,10 +23769,11 @@
         }
       },
       "required": [
+        "intensity",
         "factor",
         "speed"
       ],
-      "short_name": "NoisedLight",
+      "short_name": "NoisedLightHack",
       "type": "object",
       "typeInfo": "Struct"
     },
