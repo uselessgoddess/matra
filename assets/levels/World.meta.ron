@@ -1,5 +1,6 @@
 (
   assets:
    [ 
+    ("Flashlight", File ( path: "blueprints/Flashlight.glb" )),
    ]
 )
