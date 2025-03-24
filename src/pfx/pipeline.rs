@@ -1,7 +1,9 @@
 use bevy::{
+  asset::AssetPath,
   core_pipeline::fullscreen_vertex_shader::fullscreen_shader_vertex_state,
   prelude::{FromWorld, *},
   render::{
+    render_graph::NodeRunError,
     render_resource::{
       binding_types::{sampler, texture_2d},
       *,
@@ -10,40 +12,79 @@ use bevy::{
   },
 };
 
+macro_rules! define_config {
+  ($name:ident = $shader:literal) => {
+    pub struct $name;
+
+    impl Config for $name {
+      fn shader_asset() -> bevy::asset::AssetPath<'static> {
+        $shader.into()
+      }
+    }
+  };
+}
+
+pub(crate) use define_config;
+
+pub trait Config {
+  fn shader_asset() -> AssetPath<'static>;
+}
+
+pub trait Payload: Send + Sync + 'static {
+  type Query;
+  type Config: Config;
+
+  fn layout() -> Vec<BindGroupLayoutEntryBuilder>; // #1
+
+  fn store(render_device: &RenderDevice) -> Self; // #2
+
+  fn bind<'a, 'q>(
+    &'a self,
+    world: &'a World,
+    query: &'q Self::Query,
+  ) -> Option<Vec<BindingResource<'a>>>; // #3
+}
+
 #[derive(Resource)]
-pub struct PostFxPipeline {
+pub struct PostFxPipeline<P: Payload> {
   pub layout: BindGroupLayout,
   pub pipeline_id: CachedRenderPipelineId,
   //
   pub screen_sampler: Sampler,
-  pub dither_sampler: Sampler,
+  pub payload: P,
 }
 
-const SHADER_ASSET_PATH: &str = "shaders/pfx.wgsl";
-
-impl FromWorld for PostFxPipeline {
+impl<P: Payload> FromWorld for PostFxPipeline<P> {
   fn from_world(world: &mut World) -> Self {
+    fn sequential_layout(
+      visibility: ShaderStages,
+      entries: Vec<BindGroupLayoutEntryBuilder>,
+    ) -> Vec<BindGroupLayoutEntry> {
+      entries
+        .into_iter()
+        .enumerate()
+        .map(|(binding, entry)| entry.build(binding as u32, visibility))
+        .collect()
+    }
+
     let render_device = world.resource::<RenderDevice>();
+
+    let mut entries = vec![
+      texture_2d(TextureSampleType::Float { filterable: true }),
+      sampler(SamplerBindingType::Filtering),
+    ];
+    entries.extend(P::layout());
 
     let layout = render_device.create_bind_group_layout(
       "pfx-bind-group-layout",
-      &BindGroupLayoutEntries::sequential(
-        ShaderStages::FRAGMENT,
-        (
-          texture_2d(TextureSampleType::Float { filterable: true }),
-          sampler(SamplerBindingType::Filtering),
-          texture_2d(TextureSampleType::Float { filterable: true }),
-          sampler(SamplerBindingType::Filtering),
-        ),
-      ),
+      &sequential_layout(ShaderStages::FRAGMENT, entries),
     );
 
     let screen_sampler =
       render_device.create_sampler(&SamplerDescriptor::default());
-    let dither_sampler =
-      render_device.create_sampler(&SamplerDescriptor::default());
 
-    let shader = world.load_asset(SHADER_ASSET_PATH);
+    let payload = P::store(&render_device);
+    let shader = world.load_asset(P::Config::shader_asset());
 
     let pipeline_id = world
       .resource_mut::<PipelineCache>()
@@ -68,6 +109,6 @@ impl FromWorld for PostFxPipeline {
         zero_initialize_workgroup_memory: false,
       });
 
-    Self { layout, pipeline_id, screen_sampler, dither_sampler }
+    Self { layout, pipeline_id, screen_sampler, payload }
   }
 }

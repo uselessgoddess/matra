@@ -14,6 +14,10 @@ fn luma(color: vec3<f32>) -> f32 {
   return dot(color, vec3<f32>(0.299, 0.587, 0.114));
 }
 
+fn luma_hdr(color: vec3<f32>) -> f32 {
+  return dot(color, vec3<f32>(0.2627, 0.6780, 0.0593));
+}
+
 fn aces(x: vec3<f32>) -> vec3<f32> {
     let a = 2.51;
     let b = 0.03;
@@ -35,7 +39,7 @@ fn fragment(
     let threshold = textureSample(threshold_map_texture, threshold_map_sampler, map_position).r;
 
     let base_color = textureSample(screen_texture, screen_sampler, in.uv);
-    let luma = luma(base_color.xyz);
+    let luma = luma_hdr(base_color.xyz);
 
     if (luma > threshold) {
         return vec4f(aces(base_color.xyz * 2.0), 1.0);

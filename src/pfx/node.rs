@@ -1,30 +1,51 @@
-use bevy::{
-  ecs::query::QueryItem,
-  prelude::*,
-  render::{
-    render_asset::RenderAssets,
-    render_graph::{NodeRunError, RenderGraphContext, ViewNode},
-    render_resource::*,
-    renderer::RenderContext,
-    texture::GpuImage,
-    view::ViewTarget,
+use {
+  bevy::{
+    ecs::query::QueryItem,
+    prelude::*,
+    render::{
+      render_graph::{NodeRunError, RenderGraphContext, ViewNode},
+      render_resource::*,
+      renderer::RenderContext,
+      view::ViewTarget,
+    },
   },
+  std::marker::PhantomData,
 };
 
-#[derive(Default)]
-pub struct PostFxNode;
+use super::Payload;
 
-impl ViewNode for PostFxNode {
-  type ViewQuery = (&'static ViewTarget, &'static super::PostFxSettings);
+pub struct PostFxNode<P: Payload> {
+  _marker: PhantomData<fn() -> P>,
+}
+
+impl<P: Payload> Default for PostFxNode<P> {
+  fn default() -> Self {
+    Self { _marker: PhantomData }
+  }
+}
+
+impl<P: Payload<Query: Component>> ViewNode for PostFxNode<P> {
+  type ViewQuery = (&'static ViewTarget, &'static P::Query);
 
   fn run(
     &self,
     _graph: &mut RenderGraphContext,
     render_context: &mut RenderContext,
-    (view_target, dither_settings): QueryItem<Self::ViewQuery>,
+    (view_target, query): QueryItem<Self::ViewQuery>,
     world: &World,
   ) -> Result<(), NodeRunError> {
-    let process_pipeline = world.resource::<super::PostFxPipeline>();
+    fn sequential_layout(entries: Vec<BindingResource>) -> Vec<BindGroupEntry> {
+      entries
+        .into_iter()
+        .enumerate()
+        .map(|(binding, resource)| BindGroupEntry {
+          binding: binding as u32,
+          resource,
+        })
+        .collect()
+    }
+
+    let process_pipeline = world.resource::<super::PostFxPipeline<P>>();
 
     let pipeline_cache = world.resource::<PipelineCache>();
 
@@ -36,23 +57,20 @@ impl ViewNode for PostFxNode {
 
     let post_process = view_target.post_process_write();
 
-    let Some(dither) = world
-      .resource::<RenderAssets<GpuImage>>()
-      .get(dither_settings.handle().id())
-    else {
-      warn!("Failed to get threshold map, skipping...");
+    let mut entries = vec![
+      post_process.source.into_binding(),
+      process_pipeline.screen_sampler.into_binding(),
+    ];
+    if let Some(binding) = process_pipeline.payload.bind(world, query) {
+      entries.extend(binding);
+    } else {
       return Ok(());
-    };
+    }
 
     let bind_group = render_context.render_device().create_bind_group(
       "pfx-bind-group",
       &process_pipeline.layout,
-      &BindGroupEntries::sequential((
-        post_process.source,
-        &process_pipeline.screen_sampler,
-        &dither.texture_view,
-        &process_pipeline.dither_sampler,
-      )),
+      &sequential_layout(entries),
     );
 
     let mut render_pass =
