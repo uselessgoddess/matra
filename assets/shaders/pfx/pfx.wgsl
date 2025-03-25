@@ -2,8 +2,8 @@
 
 @group(0) @binding(0) var screen_texture: texture_2d<f32>;
 @group(0) @binding(1) var screen_sampler: sampler;
-@group(0) @binding(2) var threshold_map_texture: texture_2d<f32>;
-@group(0) @binding(3) var threshold_map_sampler: sampler;
+@group(1) @binding(0) var threshold_map_texture: texture_2d<f32>;
+@group(1) @binding(1) var threshold_map_sampler: sampler;
 
 fn quantize_color(color: vec3<f32>, levels: f32) -> vec3<f32> {
     let step = 1.0 / levels;

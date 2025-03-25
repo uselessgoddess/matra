@@ -57,20 +57,26 @@ impl<P: Payload<Query: Component>> ViewNode for PostFxNode<P> {
 
     let post_process = view_target.post_process_write();
 
-    let mut entries = vec![
+    let entries = vec![
       post_process.source.into_binding(),
       process_pipeline.screen_sampler.into_binding(),
     ];
-    if let Some(binding) = process_pipeline.payload.bind(world, query) {
-      entries.extend(binding);
-    } else {
-      return Ok(());
-    }
-
-    let bind_group = render_context.render_device().create_bind_group(
-      "pfx-bind-group",
-      &process_pipeline.layout,
+    let main_group = render_context.render_device().create_bind_group(
+      "pfx-main-bind-group",
+      &process_pipeline.main,
       &sequential_layout(entries),
+    );
+
+    let Some(entries) = process_pipeline.payload.bind(world, query) else {
+      return Ok(());
+    };
+
+    let user_group = render_context.render_device().create_bind_group(
+      "pfx-user-bind-group",
+      &process_pipeline.user,
+      &sequential_layout(
+        entries.iter().map(OwnedBindingResource::get_binding).collect(),
+      ),
     );
 
     let mut render_pass =
@@ -87,7 +93,8 @@ impl<P: Payload<Query: Component>> ViewNode for PostFxNode<P> {
       });
 
     render_pass.set_render_pipeline(pipeline);
-    render_pass.set_bind_group(0, &bind_group, &[]);
+    render_pass.set_bind_group(0, &main_group, &[]);
+    render_pass.set_bind_group(1, &user_group, &[]);
     render_pass.draw(0..3, 0..1);
 
     Ok(())

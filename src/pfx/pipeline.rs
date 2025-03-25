@@ -38,16 +38,17 @@ pub trait Payload: Send + Sync + 'static {
 
   fn store(render_device: &RenderDevice) -> Self; // #2
 
-  fn bind<'a, 'q>(
-    &'a self,
-    world: &'a World,
-    query: &'q Self::Query,
-  ) -> Option<Vec<BindingResource<'a>>>; // #3
+  fn bind(
+    &self,
+    world: &World,
+    query: &Self::Query,
+  ) -> Option<Vec<OwnedBindingResource>>; // #3
 }
 
 #[derive(Resource)]
 pub struct PostFxPipeline<P: Payload> {
-  pub layout: BindGroupLayout,
+  pub main: BindGroupLayout,
+  pub user: BindGroupLayout,
   pub pipeline_id: CachedRenderPipelineId,
   //
   pub screen_sampler: Sampler,
@@ -69,15 +70,18 @@ impl<P: Payload> FromWorld for PostFxPipeline<P> {
 
     let render_device = world.resource::<RenderDevice>();
 
-    let mut entries = vec![
+    let entries = vec![
       texture_2d(TextureSampleType::Float { filterable: true }),
       sampler(SamplerBindingType::Filtering),
     ];
-    entries.extend(P::layout());
-
-    let layout = render_device.create_bind_group_layout(
-      "pfx-bind-group-layout",
+    let main = render_device.create_bind_group_layout(
+      "pfx-main-group-layout",
       &sequential_layout(ShaderStages::FRAGMENT, entries),
+    );
+
+    let user = render_device.create_bind_group_layout(
+      "pfx-main-group-layout",
+      &sequential_layout(ShaderStages::FRAGMENT, P::layout()),
     );
 
     let screen_sampler =
@@ -90,7 +94,7 @@ impl<P: Payload> FromWorld for PostFxPipeline<P> {
       .resource_mut::<PipelineCache>()
       .queue_render_pipeline(RenderPipelineDescriptor {
         label: Some("pfx-pipeline".into()),
-        layout: vec![layout.clone()],
+        layout: vec![main.clone(), user.clone()],
         vertex: fullscreen_shader_vertex_state(),
         fragment: Some(FragmentState {
           shader,
@@ -109,6 +113,6 @@ impl<P: Payload> FromWorld for PostFxPipeline<P> {
         zero_initialize_workgroup_memory: false,
       });
 
-    Self { layout, pipeline_id, screen_sampler, payload }
+    Self { main, user, pipeline_id, screen_sampler, payload }
   }
 }

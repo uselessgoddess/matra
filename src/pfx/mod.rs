@@ -1,4 +1,5 @@
 mod node;
+mod pass;
 mod pipeline;
 mod settings;
 
@@ -8,14 +9,7 @@ use bevy::{
   render::{
     RenderApp,
     extract_component::ExtractComponentPlugin,
-    render_asset::RenderAssets,
     render_graph::{RenderGraphApp, RenderLabel, ViewNodeRunner},
-    render_resource::{
-      binding_types::{sampler, texture_2d},
-      *,
-    },
-    renderer::RenderDevice,
-    texture::GpuImage,
   },
 };
 
@@ -25,7 +19,7 @@ pub use {
   settings::PostFxSettings,
 };
 
-use pipeline::define_config;
+use pass::{clouds, dither};
 
 pub struct PostFxPlugin;
 
@@ -64,84 +58,5 @@ impl Plugin for PostFxPlugin {
 
     render_app.init_resource::<PostFxPipeline<clouds::Payload>>();
     render_app.init_resource::<PostFxPipeline<dither::Payload>>();
-  }
-}
-
-mod dither {
-  use super::*;
-
-  #[derive(Debug, Hash, PartialEq, Eq, Clone, RenderLabel)]
-  pub struct DitherLabel;
-
-  define_config!(PayloadConfig = "shaders/pfx/pfx.wgsl");
-  pub struct Payload {
-    pub dither_sampler: Sampler,
-  }
-
-  impl super::Payload for Payload {
-    type Query = PostFxSettings;
-    type Config = PayloadConfig;
-
-    fn layout() -> Vec<BindGroupLayoutEntryBuilder> {
-      vec![
-        texture_2d(TextureSampleType::Float { filterable: true }),
-        sampler(SamplerBindingType::Filtering),
-      ]
-    }
-
-    fn store(render_device: &RenderDevice) -> Self {
-      let dither_sampler =
-        render_device.create_sampler(&SamplerDescriptor::default());
-      Self { dither_sampler }
-    }
-
-    fn bind<'a, 'q>(
-      &'a self,
-      world: &'a World,
-      settings: &'q Self::Query,
-    ) -> Option<Vec<BindingResource<'a>>> {
-      let Some(dither) =
-        world.resource::<RenderAssets<GpuImage>>().get(settings.handle().id())
-      else {
-        warn!("Failed to get threshold map, skipping...");
-        return None;
-      };
-
-      Some(vec![
-        dither.texture_view.into_binding(),
-        self.dither_sampler.into_binding(),
-      ])
-    }
-  }
-}
-
-mod clouds {
-  use super::*;
-
-  #[derive(Debug, Hash, PartialEq, Eq, Clone, RenderLabel)]
-  pub struct CloudsLabel;
-
-  define_config!(PayloadConfig = "shaders/pfx/clouds.wgsl");
-  pub struct Payload {}
-
-  impl super::Payload for Payload {
-    type Query = PostFxSettings;
-    type Config = PayloadConfig;
-
-    fn layout() -> Vec<BindGroupLayoutEntryBuilder> {
-      vec![]
-    }
-
-    fn store(_render_device: &RenderDevice) -> Self {
-      Self {}
-    }
-
-    fn bind<'a, 'q>(
-      &'a self,
-      _world: &'a World,
-      _settings: &'q Self::Query,
-    ) -> Option<Vec<BindingResource<'a>>> {
-      Some(vec![])
-    }
   }
 }

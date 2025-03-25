@@ -2,6 +2,11 @@
 
 @group(0) @binding(0) var screen_texture: texture_2d<f32>;
 @group(0) @binding(1) var screen_sampler: sampler;
+@group(1) @binding(0) var<uniform> params: Params;
+
+struct Params {
+    ray_origin: vec3<f32>,
+}
 
 @fragment
 fn fragment(
@@ -12,5 +17,5 @@ fn fragment(
 
     let base_color = textureSample(screen_texture, screen_sampler, in.uv);
 
-    return base_color;
+    return vec4f(params.ray_origin, 1.0);
 }
